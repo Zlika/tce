@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ######################################################
 # Build script for OpenJDK 8                         #
@@ -20,8 +20,8 @@
 # Configure extension creation parameters            #
 ######################################################
 
-VERSION_SRC=102
-BUILD_SRC=14
+VERSION_SRC=112
+BUILD_SRC=16
 HG_TAG=jdk8u$VERSION_SRC-b$BUILD_SRC
 VERSION_TCZ=8u$VERSION_SRC-b$BUILD_SRC-1
 WRKDIR=jdk8u
@@ -30,6 +30,7 @@ EXTNAME_JRE=$NAME-jre
 EXTNAME_JDK=$NAME-jdk
 TMPDIR=`pwd`/tmp-tce
 PREFIX=/usr/local
+SCRIPT_PATH=`pwd`
 TC_UID=1001
 STAFF_GUID=50
 ROOT_UID=0
@@ -42,10 +43,25 @@ ROOT_UID=0
 rm -r -f $TMPDIR
 rm -r -f $WRKDIR
 
+# Configure ARM / x86 build
+if [ `uname -a | grep armv | wc -l` -eq "1" ];
+then
+   ARM="true"
+   echo "ARM build detected"
+else
+   ARM="false"
+   echo "x86 build detected"
+fi
+
 # Copy *.info and *.dep files
 mkdir -p $TMPDIR
-cp *.info $TMPDIR
-cp *.dep $TMPDIR
+if [ $ARM = "true" ];
+then
+   for i in *.tcz-arm.info; do cp $i $TMPDIR/${i/-arm/}; done
+else
+   cp *.tcz.info $TMPDIR
+fi
+cp *.tcz.dep $TMPDIR
 
 # Download upstream source
 hg clone http://hg.openjdk.java.net/jdk8u/jdk8u/ -r $HG_TAG
@@ -57,14 +73,27 @@ sh ./get_source.sh
 ######################################################
 
 # Export variables needed for compilation
-export CFLAGS="-march=i486 -mtune=i686 -Os -pipe"
-export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe"
+if [ $ARM = "true" ];
+then
+   export CFLAGS="-Os -pipe"
+   export CXXFLAGS="-Os -pipe"
+   VM_VARIANT=zero
+   BUILD_FOLDER_NAME=linux-arm-normal-$VM_VARIANT-release
+   BOOT_JDK=/usr/lib/jvm/java-8-openjdk-armhf
+else
+   export CFLAGS="-march=i486 -mtune=i686 -Os -pipe"
+   export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe"
+   VM_VARIANT=minimal1
+   BUILD_FOLDER_NAME=linux-x86-normal-$VM_VARIANT-release
+   BOOT_JDK=/usr/lib/jvm/java-8-openjdk-i386
+fi
 export LDFLAGS="-Wl,-O1"
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/pkgconfig
 
 # Configure source
 sh ./configure \
---with-jvm-variants=minimal1 \
+--with-jvm-variants=$VM_VARIANT \
+--with-boot-jdk=$BOOT_JDK \
 --with-debug-level=release \
 --disable-debug-symbols \
 --disable-zip-debug-info \
@@ -84,13 +113,13 @@ make profiles COMPRESS_JARS=true
 
 # Install in base temp dir
 mkdir -p $TMPDIR/$EXTNAME_JDK$PREFIX/$NAME
-cp -r build/linux-x86-normal-minimal1-release/images/j2sdk-image/* $TMPDIR/$EXTNAME_JDK$PREFIX/$NAME
+cp -r build/$BUILD_FOLDER_NAME/images/j2sdk-image/* $TMPDIR/$EXTNAME_JDK$PREFIX/$NAME
 mkdir -p $TMPDIR/$EXTNAME_JRE$PREFIX/$NAME/jre
-cp -r build/linux-x86-normal-minimal1-release/images/j2re-image/* $TMPDIR/$EXTNAME_JRE$PREFIX/$NAME/jre
+cp -r build/$BUILD_FOLDER_NAME/images/j2re-image/* $TMPDIR/$EXTNAME_JRE$PREFIX/$NAME/jre
 for profile in compact1 compact2 compact3
 do
     mkdir -p $TMPDIR/$EXTNAME_JRE-$profile$PREFIX/$NAME/jre
-    cp -r build/linux-x86-normal-minimal1-release/images/j2re-$profile-image/* $TMPDIR/$EXTNAME_JRE-$profile$PREFIX/$NAME/jre
+    cp -r build/$BUILD_FOLDER_NAME/images/j2re-$profile-image/* $TMPDIR/$EXTNAME_JRE-$profile$PREFIX/$NAME/jre
 done
 
 # Delete unneeded files
@@ -177,4 +206,3 @@ zsyncmake $NAME-doc.tcz > /dev/null 2>&1
 
 # Create tarball
 tar cvfz $NAME-doc.tar.gz $NAME-doc.tcz*
-
