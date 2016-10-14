@@ -1,13 +1,13 @@
-Title:          openjdk-8-jre-compact1.tcz
-Description:    OpenJDK JRE - Java Runtime Environment
+Title:          openjdk-8-jdk.tcz
+Description:    OpenJDK JDK - Java Development Kit
 Version:        8u102-b14-1
 Author:         OpenJDK Community
 Original-site:  http://openjdk.java.net
-Size:           11M
+Size:           60M
 Copying-policy: GPL2 with exceptions
 Extension_by:   zlika
-Tags:	    OpenJDK JRE Java Runtime Environment
-Comments:	Minimal JVM with Compact 1 JRE profile.
+Tags:	    OpenJDK JDK Java Development Kit
+Comments:	Minimal JVM with full JDK.
             ----
             Build script at https://github.com/Zlika/tce
 Change-log:	----

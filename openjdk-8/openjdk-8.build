@@ -7,8 +7,9 @@
 # and the resulting *.tcz on Tiny Core Linux 7.2.    #
 #                                                    #
 # Required build dependencies:                       #
-# sudo apt-get install openjdk-8-jdk                 #
-# sudo apt-get build-dep openjdk-8                   #
+# apt-get install mercurial squashfs-tools zsync     #
+# apt-get install openjdk-8-jdk                      #
+# apt-get build-dep openjdk-8                        #
 #                                                    #
 # Cf. http://zlika.github.io/presentations/          #
 #            compile-openjdk8/slides_en.html         #
@@ -25,17 +26,26 @@ HG_TAG=jdk8u$VERSION_SRC-b$BUILD_SRC
 VERSION_TCZ=8u$VERSION_SRC-b$BUILD_SRC-1
 WRKDIR=jdk8u
 NAME=openjdk-8
-EXTNAME=$NAME-jre
-TMPDIR=/tmp/$NAME-all
+EXTNAME_JRE=$NAME-jre
+EXTNAME_JDK=$NAME-jdk
+TMPDIR=`pwd`/tmp-tce
 PREFIX=/usr/local
+TC_UID=1001
+STAFF_GUID=50
+ROOT_UID=0
 
 ######################################################
 # Prepare extension creation                         #
 ######################################################
 
 # Remove dirs and files left from previous creation
-rm -r -f $WRKDIR
 rm -r -f $TMPDIR
+rm -r -f $WRKDIR
+
+# Copy *.info and *.dep files
+mkdir -p $TMPDIR
+cp *.info $TMPDIR
+cp *.dep $TMPDIR
 
 # Download upstream source
 hg clone http://hg.openjdk.java.net/jdk8u/jdk8u/ -r $HG_TAG
@@ -53,7 +63,6 @@ export LDFLAGS="-Wl,-O1"
 export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/lib/pkgconfig
 
 # Configure source
-make clean
 sh ./configure \
 --with-jvm-variants=minimal1 \
 --with-debug-level=release \
@@ -65,80 +74,88 @@ sh ./configure \
 --with-extra-cflags="$CFLAGS" \
 --with-extra-cxxflags="$CXXFLAGS" \
 --with-extra-ldflags="$LDFLAGS" \
---with-user-release-suffix='$VERSION_TCZ' \
+--with-user-release-suffix="$VERSION_TCZ" \
 --with-update-version=$VERSION_SRC \
 --with-build-number=b$BUILD_SRC
 
 # Compile
-make all COMPRESS_JARS=true
+make images COMPRESS_JARS=true
 make profiles COMPRESS_JARS=true
 
 # Install in base temp dir
-mkdir -p $TMPDIR/$EXTNAME$PREFIX/$NAME/jre
-cp -r build/linux-x86-normal-minimal1-release/images/j2re-image/* $TMPDIR/$EXTNAME$PREFIX/$NAME/jre
+mkdir -p $TMPDIR/$EXTNAME_JDK$PREFIX/$NAME
+cp -r build/linux-x86-normal-minimal1-release/images/j2sdk-image/* $TMPDIR/$EXTNAME_JDK$PREFIX/$NAME
+mkdir -p $TMPDIR/$EXTNAME_JRE$PREFIX/$NAME/jre
+cp -r build/linux-x86-normal-minimal1-release/images/j2re-image/* $TMPDIR/$EXTNAME_JRE$PREFIX/$NAME/jre
 for profile in compact1 compact2 compact3
 do
-    mkdir -p $TMPDIR/$EXTNAME-$profile$PREFIX/$NAME/jre
-    cp -r build/linux-x86-normal-minimal1-release/images/j2re-$profile-image/* $TMPDIR/$EXTNAME-$profile$PREFIX/$NAME/jre
+    mkdir -p $TMPDIR/$EXTNAME_JRE-$profile$PREFIX/$NAME/jre
+    cp -r build/linux-x86-normal-minimal1-release/images/j2re-$profile-image/* $TMPDIR/$EXTNAME_JRE-$profile$PREFIX/$NAME/jre
 done
 
 # Delete unneeded files
-rm -f $TMPDIR/$EXTNAME$PREFIX/$NAME/jre/release
+rm -f $TMPDIR/$EXTNAME_JDK$PREFIX/$NAME/release
+rm -f $TMPDIR/$EXTNAME_JDK$PREFIX/$NAME/src.zip
+rm -r -f $TMPDIR/$EXTNAME_JDK$PREFIX/$NAME/sample
+rm -r -f $TMPDIR/$EXTNAME_JDK$PREFIX/$NAME/demo
+rm -f $TMPDIR/$EXTNAME_JRE$PREFIX/$NAME/jre/release
 for profile in compact1 compact2 compact3
 do
-    rm -f $TMPDIR/$EXTNAME-$profile$PREFIX/$NAME/jre/release
+    rm -f $TMPDIR/$EXTNAME_JRE-$profile$PREFIX/$NAME/jre/release
 done
+rm -r -f $TMPDIR/$EXTNAME_JRE$PREFIX/$NAME/jre/man
 
 # Strip executables
 find $TMPDIR | xargs file | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded
 
 # Make TC specific changes
 SCRIPT="#!/bin/sh\nsed -i -e 's%PATH=\"%PATH=\"$PREFIX/$NAME/jre/bin:%' /etc/profile\necho 'export JAVA_HOME=$PREFIX/$NAME/jre' >> /etc/profile"
-mkdir -p $TMPDIR/$EXTNAME$PREFIX/tce.installed
-echo $SCRIPT > $TMPDIR/$EXTNAME$PREFIX/tce.installed/$EXTNAME
-chmod +x $TMPDIR/$EXTNAME$PREFIX/tce.installed/$EXTNAME
-for profile in compact1 compact2 compact3
+for image in $EXTNAME_JDK $EXTNAME_JRE $EXTNAME_JRE-compact1 $EXTNAME_JRE-compact2 $EXTNAME_JRE-compact3
 do
-    mkdir -p $TMPDIR/$EXTNAME-$profile$PREFIX/tce.installed
-    echo $SCRIPT > $TMPDIR/$EXTNAME-$profile$PREFIX/tce.installed/$EXTNAME-$profile
-    chmod +x $TMPDIR/$EXTNAME-$profile$PREFIX/tce.installed/$EXTNAME-$profile
+    mkdir -p $TMPDIR/$image$PREFIX/tce.installed
+    echo $SCRIPT > $TMPDIR/$image$PREFIX/tce.installed/$image
 done
 
 # Move files to doc extension
 mkdir -p $TMPDIR/$NAME-doc/usr/local/share
-mv $TMPDIR/$NAME-jre/usr/local/openjdk-8/jre/man $TMPDIR/$NAME-doc/usr/local/share
+mv $TMPDIR/$EXTNAME_JDK$PREFIX/$NAME/man $TMPDIR/$NAME-doc$PREFIX/share
 
-# Adjust directory access rigths
-find $TMPDIR/ -type d | xargs chmod 755;
-
-###################################################
-# Create base extension in temp dir               #
-###################################################
-
-cd $TMPDIR
-mksquashfs $TMPDIR/$EXTNAME $EXTNAME.tcz -b 4k -no-xattrs
-cd $TMPDIR/$EXTNAME
-find usr -not -type d > ../$EXTNAME.tcz.list
-cd $TMPDIR
-
-# Create md5 file
-md5sum $EXTNAME.tcz > $EXTNAME.tcz.md5.txt
-
-for profile in compact1 compact2 compact3
+# Adjust directory access rigths and file owner
+find $TMPDIR/* -type d | xargs chmod 755;
+find $TMPDIR/* | xargs sudo chown -h $ROOT_UID:$ROOT_UID;
+for image in $EXTNAME_JDK $EXTNAME_JRE $EXTNAME_JRE-compact1 $EXTNAME_JRE-compact2 $EXTNAME_JRE-compact3
 do
-    mksquashfs $TMPDIR/$EXTNAME-$profile $EXTNAME-$profile.tcz -b 4k -no-xattrs
-    cd $TMPDIR/$EXTNAME-$profile
-    find usr -not -type d > ../$EXTNAME-$profile.tcz.list
+    sudo chmod -R 775 $TMPDIR/$image$PREFIX/tce.installed
+    sudo chown -R $TC_UID:$STAFF_GUID $TMPDIR/$image$PREFIX/tce.installed
+done
+
+###################################################
+# Create extensions in temp dir                   #
+###################################################
+
+for image in $EXTNAME_JDK $EXTNAME_JRE $EXTNAME_JRE-compact1 $EXTNAME_JRE-compact2 $EXTNAME_JRE-compact3
+do
+    cd $TMPDIR
+    mksquashfs $TMPDIR/$image $image.tcz -b 4k -no-xattrs
+    cd $TMPDIR/$image
+    find usr -not -type d > ../$image.tcz.list
     cd $TMPDIR
 
     # Create md5 file
-    md5sum $EXTNAME-$profile.tcz > $EXTNAME-$profile.tcz.md5.txt
+    md5sum $image.tcz > $image.tcz.md5.txt
+
+    # Create zsync file
+    zsyncmake $image.tcz > /dev/null 2>&1
+
+    # Create tarball
+    tar cvfz $image.tar.gz $image.tcz*
 done
 
 ###################################################
 # Create doc extension in temp dir                #
 ###################################################
 
+cd $TMPDIR
 mksquashfs $TMPDIR/$NAME-doc $NAME-doc.tcz -b 4k -no-xattrs
 cd $TMPDIR/$NAME-doc
 find usr -not -type d > ../$NAME-doc.tcz.list
@@ -146,4 +163,10 @@ cd $TMPDIR
 
 # Create md5 file
 md5sum $NAME-doc.tcz > $NAME-doc.tcz.md5.txt
+
+# Create zsync file
+zsyncmake $NAME-doc.tcz > /dev/null 2>&1
+
+# Create tarball
+tar cvfz $NAME-doc.tar.gz $NAME-doc.tcz*
 
