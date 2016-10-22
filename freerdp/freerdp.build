@@ -1,15 +1,78 @@
 #!/bin/sh
 
+######################################################
+# Build script for FreeRDP                           #
+######################################################
+
+######################################################
+# Configure extension creation parameters            #
+######################################################
+
+COMMIT=4c69c3e
+VERSION_TCZ=8u$VERSION_SRC-b$BUILD_SRC-1
+WRKDIR=FreeRDP
+EXTNAME=freerdp
+TMPDIR=/tmp/$EXTNAME
+PREFIX=/usr/local
+
+######################################################
+# Prepare extension creation                         #
+######################################################
+
+# Remove dirs and files left from previous creation
+rm -r -f $TMPDIR
+rm -r -f $WRKDIR
+
+# Copy *.info and *.dep files
+mkdir -p $TMPDIR
+cp *.info $TMPDIR
+cp *.dep $TMPDIR
+
+# Download build dependencies
 tce-load -iw git cmake compiletc Xorg-7.7-dev zlib_base-dev openssl-dev alsa-dev pulseaudio-dev cups-dev ffmpeg-dev gstreamer0.10-dev gst-plugins-base0.10-dev pcsc-lite-dev
 
+# Download upstream source
 git clone https://github.com/FreeRDP/FreeRDP.git
-cd FreeRDP
-git checkout 4c69c3e
+cd $WRKDIR
+git checkout $COMMIT
+
+######################################################
+# Compile extension                                  #
+######################################################
+
+# Export variables needed for compilation
+export CFLAGS="-march=i486 -mtune=i686 -Os -pipe"
+export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe"
+export LDFLAGS="-Wl,-O1"
 
 mkdir build
 cd build
 
-cmake -DCMAKE_C_FLAGS="-march=i486 -mtune=i686 -Os -pipe" -DCMAKE_CXX_FLAGS="-march=i486 -mtune=i686 -Os -pipe" -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=/usr/local/lib -DCMAKE_BUILD_TYPE=Release -DWITH_LIBSYSTEMD=OFF -DWITH_WAYLAND=OFF -DWITH_PULSE=ON -DWITH_CUPS=ON -DWITH_JPEG=ON -DWITH_X264=ON -DWITH_GSTREAMER_1_0=ON -DWITH_FFMPEG=ON -DWITH_ALSA=ON -DWITH_PCSC=ON ../
+# Configure
+cmake -DCMAKE_C_FLAGS=$CFLAGS -DCMAKE_CXX_FLAGS=$CXXFLAGS -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_INSTALL_LIBDIR=$PREFIX/lib -DCMAKE_BUILD_TYPE=Release -DWITH_LIBSYSTEMD=OFF -DWITH_WAYLAND=OFF -DWITH_PULSE=ON -DWITH_CUPS=ON -DWITH_JPEG=ON -DWITH_X264=ON -DWITH_GSTREAMER_1_0=ON -DWITH_FFMPEG=ON -DWITH_ALSA=ON -DWITH_PCSC=ON ../
 
+# Compile
 make
-sudo make install
+
+# Install in base temp dir
+make install DESTDIR=$TMPDIR
+
+# Adjust directory access rigths
+find $TMPDIR/ -type d | xargs chmod -v 755;
+
+# Strip executables
+find $TMPDIR | xargs file | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded
+
+###################################################
+# Create base extension in temp dir               #
+###################################################
+
+cd $TMPDIR
+cd ..
+mksquashfs $TMPDIR $EXTNAME.tcz
+cd $TMPDIR
+find usr -not -type d > $EXTNAME.tcz.list
+mv ../$EXTNAME.tcz .
+
+# Create md5 file
+md5sum $EXTNAME.tcz > $EXTNAME.tcz.md5.txt
