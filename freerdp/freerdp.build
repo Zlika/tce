@@ -1,0 +1,15 @@
+#!/bin/sh
+
+tce-load -iw git cmake compiletc Xorg-7.7-dev zlib_base-dev openssl-dev alsa-dev pulseaudio-dev cups-dev ffmpeg-dev gstreamer0.10-dev gst-plugins-base0.10-dev pcsc-lite-dev
+
+git clone https://github.com/FreeRDP/FreeRDP.git
+cd FreeRDP
+git checkout 4c69c3e
+
+mkdir build
+cd build
+
+cmake -DCMAKE_C_FLAGS="-march=i486 -mtune=i686 -Os -pipe" -DCMAKE_CXX_FLAGS="-march=i486 -mtune=i686 -Os -pipe" -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_INSTALL_LIBDIR=/usr/local/lib -DCMAKE_BUILD_TYPE=Release -DWITH_LIBSYSTEMD=OFF -DWITH_WAYLAND=OFF -DWITH_PULSE=ON -DWITH_CUPS=ON -DWITH_JPEG=ON -DWITH_X264=ON -DWITH_GSTREAMER_1_0=ON -DWITH_FFMPEG=ON -DWITH_ALSA=ON -DWITH_PCSC=ON ../
+
+make
+sudo make install
