@@ -2,8 +2,8 @@ Title:		remmina.tcz
 Description:	remmina - GTK+ Remote Desktop Client
 Version:	1.1.2
 Author:		Various
-Original-site:	http://remmina.sourceforge.net
-Copying-policy:	GPL
+Original-site:	http://remmina.org
+Copying-policy:	GPL v2
 Size:		268KB
 Extension_by:	gutmensch
 Tags:		remote desktop vnc xdmcp freerdp gtk+ gtk3

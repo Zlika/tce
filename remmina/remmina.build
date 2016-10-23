@@ -28,7 +28,7 @@ cp $EXTNAME.tcz.info $TMPDIR
 cp $EXTNAME.tcz.dep $TMPDIR
 
 # Download build dependencies
-tce-load -iw git cmakecompiletc webkitgtk-dev vte-gtk3-dev gettext libvncserver-dev freerdp-dev
+tce-load -iw git cmake compiletc vte-gtk3-dev libgcrypt-dev gettext libvncserver-dev freerdp-dev zlib_base-dev libgnome-keyring-dev
 
 # Download upstream source
 git clone https://github.com/FreeRDP/Remmina.git
@@ -48,7 +48,7 @@ mkdir build
 cd build
 
 # Configure
-cmake -DCMAKE_C_FLAGS=$CFLAGS -DCMAKE_CXX_FLAGS=$CXXFLAGS -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_INSTALL_LIBDIR=$PREFIX/lib -DCMAKE_BUILD_TYPE=Release -DWITH_AVAHI=OFF -DWITH_LIBSSH=OFF  -DWITH_APPINDICATOR=OFF -DWITH_TELEPATHY=OFF -DWITH_SPICE=OFF ../
+cmake -DCMAKE_C_FLAGS=$CFLAGS -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_INSTALL_LIBDIR=$PREFIX/lib -DCMAKE_BUILD_TYPE=Release -DWITH_AVAHI=OFF -DWITH_LIBSSH=OFF  -DWITH_APPINDICATOR=OFF -DWITH_TELEPATHY=OFF ../
 
 # Compile
 make
@@ -61,6 +61,10 @@ find $TMPDIR/ -type d | xargs chmod -v 755;
 
 # Strip executables
 find $TMPDIR | xargs file | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded
+
+# Copy license file
+mkdir -p $TMPDIR$PREFIX/share/doc/$EXTNAME
+cp ../LICENSE $TMPDIR$PREFIX/share/doc/$EXTNAME
 
 ###################################################
 # Create base extension in temp dir               #
