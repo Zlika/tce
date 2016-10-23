@@ -144,6 +144,10 @@ do
     # Create md5 file
     md5sum $image.tcz > $image.tcz.md5.txt
 
+    # Update Size field in info file
+    SIZE=$(du -h $image.tcz | cut -f 1)
+    sed -i "s/^Size.*/Size:\t\t$SIZE/" $image.tcz.info
+
     # Create zsync file
     zsyncmake $image.tcz > /dev/null 2>&1
 
@@ -163,6 +167,10 @@ cd $TMPDIR
 
 # Create md5 file
 md5sum $NAME-doc.tcz > $NAME-doc.tcz.md5.txt
+
+# Update Size field in info file
+SIZE=$(du -h $NAME-doc.tcz | cut -f 1)
+sed -i "s/^Size.*/Size:\t\t$SIZE/" $NAME-doc.tcz.info
 
 # Create zsync file
 zsyncmake $NAME-doc.tcz > /dev/null 2>&1
