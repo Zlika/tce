@@ -1,9 +1,11 @@
 Xorg-7.7-lib.tcz
+openssl.tcz
 libasound.tcz
 libpulseaudio.tcz
 libcups.tcz
-openssl.tcz
 pcsc-lite.tcz
-libjpeg-turbo.tcz
 libavcodec.tcz
-gst-plugins-base.tcz
+libavutil.tcz
+gstreamer0.10
+gst-plugins-base0.10.tcz
+libjpeg-turbo.tcz

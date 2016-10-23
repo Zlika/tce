@@ -32,7 +32,7 @@ cp $EXTNAME-dev.tcz.info $TMPDIR-dev
 cp $EXTNAME-dev.tcz.dep $TMPDIR-dev
 
 # Download build dependencies
-tce-load -iw git cmake compiletc Xorg-7.7-dev zlib_base-dev openssl-dev alsa-dev pulseaudio-dev cups-dev ffmpeg-dev gstreamer0.10-dev gst-plugins-base0.10-dev pcsc-lite-dev
+tce-load -iw git cmake compiletc Xorg-7.7-dev zlib_base-dev openssl-dev alsa-dev pulseaudio-dev cups-dev pcsc-lite-dev ffmpeg-dev gstreamer0.10-dev gst-plugins-base0.10-dev libjpeg-turbo-dev
 
 # Download upstream source
 git clone https://github.com/FreeRDP/FreeRDP.git
@@ -52,7 +52,7 @@ mkdir build
 cd build
 
 # Configure
-cmake -DCMAKE_C_FLAGS=$CFLAGS -DCMAKE_CXX_FLAGS=$CXXFLAGS -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_INSTALL_LIBDIR=$PREFIX/lib -DCMAKE_BUILD_TYPE=Release -DWITH_LIBSYSTEMD=OFF -DWITH_WAYLAND=OFF -DWITH_PULSE=ON -DWITH_CUPS=ON -DWITH_JPEG=ON -DWITH_X264=ON -DWITH_GSTREAMER_1_0=ON -DWITH_FFMPEG=ON -DWITH_ALSA=ON -DWITH_PCSC=ON ../
+cmake -DCMAKE_C_FLAGS=$CFLAGS -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_INSTALL_LIBDIR=$PREFIX/lib -DCMAKE_BUILD_TYPE=Release -DWITH_PULSE=ON -DWITH_CUPS=ON -DWITH_JPEG=ON -DWITH_GSTREAMER=ON -DWITH_FFMPEG=ON -DWITH_ALSA=ON -DWITH_PCSC=ON ../
 
 # Compile
 make
