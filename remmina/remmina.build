@@ -1,0 +1,87 @@
+#!/bin/sh
+
+######################################################
+# Build script for FreeRDP                           #
+######################################################
+
+######################################################
+# Configure extension creation parameters            #
+######################################################
+
+COMMIT=cc77c59
+WRKDIR=Remmina
+EXTNAME=remmina
+TMPDIR=/tmp/$EXTNAME
+PREFIX=/usr/local
+
+######################################################
+# Prepare extension creation                         #
+######################################################
+
+# Remove dirs and files left from previous creation
+rm -r -f $TMPDIR
+rm -r -f $WRKDIR
+
+# Copy *.info and *.dep files
+mkdir -p $TMPDIR
+cp $EXTNAME.tcz.info $TMPDIR
+cp $EXTNAME.tcz.dep $TMPDIR
+
+# Download build dependencies
+tce-load -iw git cmakecompiletc webkitgtk-dev vte-gtk3-dev gettext libvncserver-dev freerdp-dev
+
+# Download upstream source
+git clone https://github.com/FreeRDP/Remmina.git
+cd $WRKDIR
+git checkout $COMMIT
+
+######################################################
+# Compile extension                                  #
+######################################################
+
+# Export variables needed for compilation
+export CFLAGS="-march=i486 -mtune=i686 -Os -pipe"
+export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe"
+export LDFLAGS="-Wl,-O1"
+
+mkdir build
+cd build
+
+# Configure
+cmake -DCMAKE_C_FLAGS=$CFLAGS -DCMAKE_CXX_FLAGS=$CXXFLAGS -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_INSTALL_LIBDIR=$PREFIX/lib -DCMAKE_BUILD_TYPE=Release -DWITH_AVAHI=OFF -DWITH_LIBSSH=OFF  -DWITH_APPINDICATOR=OFF -DWITH_TELEPATHY=OFF -DWITH_SPICE=OFF ../
+
+# Compile
+make
+
+# Install in base temp dir
+make install DESTDIR=$TMPDIR
+
+# Adjust directory access rigths
+find $TMPDIR/ -type d | xargs chmod -v 755;
+
+# Strip executables
+find $TMPDIR | xargs file | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded
+
+###################################################
+# Create base extension in temp dir               #
+###################################################
+
+cd $TMPDIR
+cd ..
+mksquashfs $TMPDIR $EXTNAME.tcz
+cd $TMPDIR
+find usr -not -type d > $EXTNAME.tcz.list
+mv ../$EXTNAME.tcz .
+
+# Create md5 file
+md5sum $EXTNAME.tcz > $EXTNAME.tcz.md5.txt
+
+# Update Size field in info file
+SIZE=$(du -h $EXTNAME.tcz | cut -f 1)
+sed -i "s/^Size.*/Size:\t\t$SIZE/" $EXTNAME.tcz.info
+
+# Create zsync file
+zsyncmake $EXTNAME.tcz > /dev/null 2>&1
+
+# Create tarball
+tar cvfz $EXTNAME.tar.gz $EXTNAME.tcz*
