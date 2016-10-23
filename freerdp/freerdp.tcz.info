@@ -3,7 +3,7 @@ Description:	FreeRDP - A remote client for MS RDP/Windows
 Version:	1.1-git4c69c3e
 Author:		Various
 Original-site:	http://www.freerdp.com
-Copying-policy:	GPL
+Copying-policy:	Apache License Version 2.0
 Size:		1.0MB
 Extension_by:	gutmensch
 Tags:		rdp client

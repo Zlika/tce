@@ -70,6 +70,10 @@ find $TMPDIR | xargs file | grep ELF | cut -f 1 -d : | xargs strip --strip-unnee
 mkdir -p $TMPDIR-dev$PREFIX
 mv $TMPDIR$PREFIX/include $TMPDIR-dev$PREFIX
 
+# Copy license file
+mkdir -p $TMPDIR$PREFIX/share/doc/$EXTNAME
+cp ../LICENSE $TMPDIR$PREFIX/share/doc/$EXTNAME
+
 ###################################################
 # Create base extension in temp dir               #
 ###################################################
