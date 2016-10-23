@@ -9,7 +9,6 @@
 ######################################################
 
 COMMIT=4c69c3e
-VERSION_TCZ=8u$VERSION_SRC-b$BUILD_SRC-1
 WRKDIR=FreeRDP
 EXTNAME=freerdp
 TMPDIR=/tmp/$EXTNAME
@@ -21,12 +20,16 @@ PREFIX=/usr/local
 
 # Remove dirs and files left from previous creation
 rm -r -f $TMPDIR
+rm -r -f $TMPDIR-dev
 rm -r -f $WRKDIR
 
 # Copy *.info and *.dep files
 mkdir -p $TMPDIR
-cp *.info $TMPDIR
-cp *.dep $TMPDIR
+cp $EXTNAME.tcz.info $TMPDIR
+cp $EXTNAME.tcz.dep $TMPDIR
+mkdir -p $TMPDIR-dev
+cp $EXTNAME-dev.tcz.info $TMPDIR
+cp $EXTNAME-dev.tcz.dep $TMPDIR
 
 # Download build dependencies
 tce-load -iw git cmake compiletc Xorg-7.7-dev zlib_base-dev openssl-dev alsa-dev pulseaudio-dev cups-dev ffmpeg-dev gstreamer0.10-dev gst-plugins-base0.10-dev pcsc-lite-dev
@@ -57,11 +60,16 @@ make
 # Install in base temp dir
 make install DESTDIR=$TMPDIR
 
+# Delete unneeded files
+
 # Adjust directory access rigths
 find $TMPDIR/ -type d | xargs chmod -v 755;
 
 # Strip executables
 find $TMPDIR | xargs file | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded
+
+# Move include files to dev extension
+mv $TMDIR$PREFIX/include $TMPDIR-dev$PREFIX
 
 ###################################################
 # Create base extension in temp dir               #
@@ -76,3 +84,25 @@ mv ../$EXTNAME.tcz .
 
 # Create md5 file
 md5sum $EXTNAME.tcz > $EXTNAME.tcz.md5.txt
+
+# Update Size field in info file
+SIZE=$(du -h $EXTNAME.tcz | cut -f 1)
+sed -i "s/^Size.*/Size:\t\t$SIZE/" $EXTNAME.tcz.info
+
+###################################################
+# Create dev extension in temp dir                #
+###################################################
+
+cd $TMPDIR-dev
+cd ..
+mksquashfs $TMPDIR-dev $EXTNAME-dev.tcz
+cd $TMPDIR-dev
+find usr -not -type d > $EXTNAME-dev.tcz.list
+mv ../$EXTNAME-dev.tcz .
+
+# Create md5 file
+md5sum $EXTNAME-dev.tcz > $EXTNAME-dev.tcz.md5.txt
+
+# Update Size field in info file
+SIZE=$(du -h $EXTNAME-dev.tcz | cut -f 1)
+sed -i "s/^Size.*/Size:\t\t$SIZE/" $EXTNAME-dev.tcz.info

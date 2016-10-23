@@ -1,12 +1,12 @@
 Title:		freerdp.tcz
-Description:	FreeRDP - A remote client for MS RDP/Windows
+Description:	FreeRDP - A remote client for MS RDP/Windows - dev files
 Version:	1.1-git4c69c3e
 Author:		Various
 Original-site:	http://www.freerdp.com
 Copying-policy:	GPL
-Size:		1.0MB
+Size:		408KB
 Extension_by:	gutmensch
-Tags:		rdp client
+Tags:		rdp client dev
 Comments:	Might require Xorg for other than US layout
 	   	--- 
 		This extension is PPI compatible.
