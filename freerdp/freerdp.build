@@ -67,6 +67,7 @@ find $TMPDIR/ -type d | xargs chmod -v 755;
 find $TMPDIR | xargs file | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded
 
 # Move include files to dev extension
+mkdir -p $TMPDIR-dev$PREFIX
 mv $TMPDIR$PREFIX/include $TMPDIR-dev$PREFIX
 
 ###################################################
