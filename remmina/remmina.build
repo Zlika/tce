@@ -28,7 +28,7 @@ cp $EXTNAME.tcz.info $TMPDIR
 cp $EXTNAME.tcz.dep $TMPDIR
 
 # Download build dependencies
-tce-load -iw git cmake compiletc squashfs-tools zsync vte-gtk3-dev libgcrypt-dev gettext libvncserver-dev freerdp-dev zlib_base-dev libgnome-keyring-dev
+tce-load -iw git cmake compiletc squashfs-tools zsync vte-gtk3-dev libgcrypt-dev gettext libvncserver-dev freerdp-dev zlib_base-dev
 
 # Download upstream source
 git clone https://github.com/FreeRDP/Remmina.git
@@ -48,7 +48,7 @@ mkdir build
 cd build
 
 # Configure
-cmake -DCMAKE_C_FLAGS=$CFLAGS -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_INSTALL_LIBDIR=$PREFIX/lib -DCMAKE_BUILD_TYPE=Release -DWITH_AVAHI=OFF -DWITH_LIBSSH=OFF  -DWITH_APPINDICATOR=OFF -DWITH_TELEPATHY=OFF ../
+cmake -DCMAKE_C_FLAGS=$CFLAGS -DCMAKE_INSTALL_PREFIX=$PREFIX -DCMAKE_INSTALL_LIBDIR=$PREFIX/lib -DCMAKE_BUILD_TYPE=Release -DWITH_AVAHI=OFF -DWITH_LIBSSH=OFF  -DWITH_APPINDICATOR=OFF -DWITH_TELEPATHY=OFF -DWITH_GNOMEKEYRING=OFF ../
 
 # Compile
 make

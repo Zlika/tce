@@ -2,4 +2,5 @@ vte-gtk3.tcz
 libgcrypt.tcz
 libvncserver.tcz
 freerdp.tcz
-adwaita-icon-theme
+gnome-icon-theme
+libffi5
