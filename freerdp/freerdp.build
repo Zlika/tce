@@ -32,7 +32,7 @@ cp $EXTNAME-dev.tcz.info $TMPDIR-dev
 cp $EXTNAME-dev.tcz.dep $TMPDIR-dev
 
 # Download build dependencies
-tce-load -iw git cmake compiletc Xorg-7.7-dev zlib_base-dev openssl-dev alsa-dev pulseaudio-dev cups-dev pcsc-lite-dev ffmpeg-dev gstreamer0.10-dev gst-plugins-base0.10-dev libjpeg-turbo-dev
+tce-load -iw git cmake compiletc squashfs-tools zsync Xorg-7.7-dev zlib_base-dev openssl-dev alsa-dev pulseaudio-dev cups-dev pcsc-lite-dev ffmpeg-dev gstreamer0.10-dev gst-plugins-base0.10-dev libjpeg-turbo-dev
 
 # Download upstream source
 git clone https://github.com/FreeRDP/FreeRDP.git

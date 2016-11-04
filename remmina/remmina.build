@@ -28,7 +28,7 @@ cp $EXTNAME.tcz.info $TMPDIR
 cp $EXTNAME.tcz.dep $TMPDIR
 
 # Download build dependencies
-tce-load -iw git cmake compiletc vte-gtk3-dev libgcrypt-dev gettext libvncserver-dev freerdp-dev zlib_base-dev libgnome-keyring-dev
+tce-load -iw git cmake compiletc squashfs-tools zsync vte-gtk3-dev libgcrypt-dev gettext libvncserver-dev freerdp-dev zlib_base-dev libgnome-keyring-dev
 
 # Download upstream source
 git clone https://github.com/FreeRDP/Remmina.git
