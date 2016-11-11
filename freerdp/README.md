@@ -1,0 +1,1 @@
+Build script to generate the FreeRDP extension for Tiny Core Linux.

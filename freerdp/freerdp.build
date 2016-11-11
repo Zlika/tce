@@ -13,6 +13,7 @@ WRKDIR=FreeRDP
 EXTNAME=freerdp
 TMPDIR=/tmp/$EXTNAME
 PREFIX=/usr/local
+SCRIPT_PATH=$(pwd)
 
 ######################################################
 # Prepare extension creation                         #
@@ -23,16 +24,12 @@ rm -r -f $TMPDIR
 rm -r -f $TMPDIR-dev
 rm -r -f $WRKDIR
 
-# Copy *.info and *.dep files
+# Create temp folders
 mkdir -p $TMPDIR
-cp $EXTNAME.tcz.info $TMPDIR
-cp $EXTNAME.tcz.dep $TMPDIR
 mkdir -p $TMPDIR-dev
-cp $EXTNAME-dev.tcz.info $TMPDIR-dev
-cp $EXTNAME-dev.tcz.dep $TMPDIR-dev
 
 # Download build dependencies
-tce-load -iw git cmake compiletc squashfs-tools zsync Xorg-7.7-dev zlib_base-dev openssl-dev alsa-dev pulseaudio-dev cups-dev pcsc-lite-dev ffmpeg-dev gstreamer0.10-dev gst-plugins-base0.10-dev libjpeg-turbo-dev
+tce-load -iw git cmake compiletc squashfs-tools zsync Xorg-7.7-dev zlib_base-dev openssl-dev alsa-dev pulseaudio-dev cups-dev pcsc-lite-dev ffmpeg-dev gst-plugins-base0.10-dev libjpeg-turbo-dev
 
 # Download upstream source
 git clone https://github.com/FreeRDP/FreeRDP.git
@@ -69,6 +66,11 @@ find $TMPDIR | xargs file | grep ELF | cut -f 1 -d : | xargs strip --strip-unnee
 # Move include files to dev extension
 mkdir -p $TMPDIR-dev$PREFIX
 mv $TMPDIR$PREFIX/include $TMPDIR-dev$PREFIX
+# Move pkgconfig folder to dev extension
+mkdir -p $TMPDIR-dev$PREFIX/lib
+mv $TMPDIR$PREFIX/lib/pkgconfig $TMPDIR-dev$PREFIX/lib
+# Move *.a files to dev extension
+mv $TMPDIR$PREFIX/lib/*.a $TMPDIR-dev$PREFIX/lib
 
 # Copy license file
 mkdir -p $TMPDIR$PREFIX/share/doc/$EXTNAME
@@ -87,6 +89,10 @@ mv ../$EXTNAME.tcz .
 
 # Create md5 file
 md5sum $EXTNAME.tcz > $EXTNAME.tcz.md5.txt
+
+# Copy *.info and *.dep files
+cp $SCRIPT_PATH/$EXTNAME.tcz.info $TMPDIR
+cp $SCRIPT_PATH/$EXTNAME.tcz.dep $TMPDIR
 
 # Update Size field in info file
 SIZE=$(du -h $EXTNAME.tcz | cut -f 1)
@@ -111,6 +117,10 @@ mv ../$EXTNAME-dev.tcz .
 
 # Create md5 file
 md5sum $EXTNAME-dev.tcz > $EXTNAME-dev.tcz.md5.txt
+
+# Copy *.info and *.dep files
+cp $SCRIPT_PATH/$EXTNAME-dev.tcz.info $TMPDIR-dev
+cp $SCRIPT_PATH/$EXTNAME-dev.tcz.dep $TMPDIR-dev
 
 # Update Size field in info file
 SIZE=$(du -h $EXTNAME-dev.tcz | cut -f 1)

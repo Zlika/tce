@@ -6,6 +6,5 @@ libcups.tcz
 pcsc-lite.tcz
 libavcodec.tcz
 libavutil.tcz
-gstreamer0.10.tcz
 gst-plugins-base0.10.tcz
 libjpeg-turbo.tcz
