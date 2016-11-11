@@ -67,6 +67,11 @@ rm -r -f $TMPDIR$PREFIX/lib/pkgconfig
 mkdir -p $TMPDIR$PREFIX/share/doc/$EXTNAME
 cp ../LICENSE $TMPDIR$PREFIX/share/doc/$EXTNAME
 
+# Configure application icon
+sed -i '/Icon=remmina/a X-FullPathIcon=/usr/local/share/pixmaps/remmina.png' $TMPDIR$PREFIX/share/applications/remmina.desktop
+mkdir -p $TMPDIR$PREFIX/share/pixmaps/
+cp $TMPDIR$PREFIX/share/icons/hicolor/48x48/apps/remmina.png $TMPDIR$PREFIX/share/pixmaps/
+
 ###################################################
 # Create base extension in temp dir               #
 ###################################################
