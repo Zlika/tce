@@ -13,6 +13,7 @@ WRKDIR=Remmina
 EXTNAME=remmina
 TMPDIR=/tmp/$EXTNAME
 PREFIX=/usr/local
+SCRIPT_PATH=$(pwd)
 
 ######################################################
 # Prepare extension creation                         #
@@ -21,11 +22,7 @@ PREFIX=/usr/local
 # Remove dirs and files left from previous creation
 rm -r -f $TMPDIR
 rm -r -f $WRKDIR
-
-# Copy *.info and *.dep files
 mkdir -p $TMPDIR
-cp $EXTNAME.tcz.info $TMPDIR
-cp $EXTNAME.tcz.dep $TMPDIR
 
 # Download build dependencies
 tce-load -iw git cmake compiletc squashfs-tools zsync vte-gtk3-dev libgcrypt-dev gettext libvncserver-dev freerdp-dev zlib_base-dev
@@ -62,6 +59,10 @@ find $TMPDIR/ -type d | xargs chmod -v 755;
 # Strip executables
 find $TMPDIR | xargs file | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded
 
+# Remove local files and pkgconfig folder
+rm -r -f $TMPDIR$PREFIX/share/locale
+rm -r -f $TMPDIR$PREFIX/lib/pkgconfig
+
 # Copy license file
 mkdir -p $TMPDIR$PREFIX/share/doc/$EXTNAME
 cp ../LICENSE $TMPDIR$PREFIX/share/doc/$EXTNAME
@@ -79,6 +80,10 @@ mv ../$EXTNAME.tcz .
 
 # Create md5 file
 md5sum $EXTNAME.tcz > $EXTNAME.tcz.md5.txt
+
+# Copy *.info and *.dep files
+cp $SCRIPT_PATH/$EXTNAME.tcz.info $TMPDIR
+cp $SCRIPT_PATH/$EXTNAME.tcz.dep $TMPDIR
 
 # Update Size field in info file
 SIZE=$(du -h $EXTNAME.tcz | cut -f 1)
