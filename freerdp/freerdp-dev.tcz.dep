@@ -1,8 +1,4 @@
 freerdp.tcz
-Xorg-7.7-dev.tcz
-openssl-dev.tcz
-alsa-dev.tcz
-pulseaudio-dev.tcz
 cups-dev.tcz
 pcsc-lite-dev.tcz
 ffmpeg-dev.tcz
