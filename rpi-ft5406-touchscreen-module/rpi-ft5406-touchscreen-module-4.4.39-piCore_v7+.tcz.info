@@ -1,0 +1,15 @@
+Title:		rpi-ft5406-touchscreen-module-4.4.39-piCore_v7+.tcz
+Description:	Kernel module for the official Raspberry Pi touchscreen
+Version:	4.4.39-piCore_v7+
+Author:		Various
+Original-site:	http://kernel.org
+Copying-policy:	GPL v2
+Size:		268KB
+Extension_by:	Zlika
+Tags:		TOUCHSCREEN KERNEL MODULE
+Comments:	Binaries only
+	   	----------
+	   	Compiled for piCore 8.x
+	   	----------
+Change-log:     
+Current:	2017/01/18	First version

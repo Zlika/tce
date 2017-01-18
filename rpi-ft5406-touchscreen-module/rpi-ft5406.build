@@ -1,0 +1,69 @@
+#!/bin/sh
+
+######################################################
+# Packaging script for the rpi_ft5406 kernel module  #
+######################################################
+
+######################################################
+# Configure extension creation parameters            #
+######################################################
+
+VERSION=4.4.39-piCore_v7+
+WRKDIR=modules
+EXTNAME=rpi-ft5406-touchscreen-module-$VERSION
+TMPDIR=/tmp/$EXTNAME
+PREFIX=/usr/local
+SCRIPT_PATH=$(pwd)
+
+######################################################
+# Prepare extension creation                         #
+######################################################
+
+# Remove dirs and files left from previous creation
+rm -r -f $TMPDIR
+rm -r -f $WRKDIR
+rm -r -f "$VERSION"_modules.tar.xz
+
+# Download packaging dependencies
+tce-load -iw squashfs-tools zsync
+
+# Download upstream binary
+wget http://tinycorelinux.net/8.x/armv7/releases/RPi/src/kernel/"$VERSION"_modules.tar.xz
+
+######################################################
+# Copy files                                         #
+######################################################
+
+tar xf "$VERSION"_modules.tar.xz
+mkdir -p $TMPDIR$PREFIX/lib/modules/$VERSION/kernel/drivers/input/touchscreen
+cp $SCRIPT_PATH/$WRKDIR/"$VERSION"/kernel/drivers/input/touchscreen/rpi-ft5406.ko $TMPDIR$PREFIX/lib/modules/"$VERSION"/kernel/drivers/input/touchscreen
+
+# Adjust directory access rigths
+find $TMPDIR/ -type d | xargs chmod -v 755;
+
+###################################################
+# Create base extension in temp dir               #
+###################################################
+
+cd $TMPDIR
+cd ..
+mksquashfs $TMPDIR $EXTNAME.tcz
+cd $TMPDIR
+find usr -not -type d > $EXTNAME.tcz.list
+mv ../$EXTNAME.tcz .
+
+# Create md5 file
+md5sum $EXTNAME.tcz > $EXTNAME.tcz.md5.txt
+
+# Copy *.info and *.dep files
+cp $SCRIPT_PATH/$EXTNAME.tcz.info $TMPDIR
+
+# Update Size field in info file
+SIZE=$(du -h $EXTNAME.tcz | cut -f 1)
+sed -i "s/^Size.*/Size:\t\t$SIZE/" $EXTNAME.tcz.info
+
+# Create zsync file
+zsyncmake $EXTNAME.tcz > /dev/null 2>&1
+
+# Create tarball
+tar cvfz $EXTNAME.tar.gz $EXTNAME.tcz*
