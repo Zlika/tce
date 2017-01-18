@@ -2,3 +2,7 @@
 /freerdp/FreeRDP
 /remmina/Remmina
 /openjdk-8/jdk8u
+/rpi-ft5406-touchscreen-module/modules
+/rpi-ft5406-touchscreen-module/firmware
+/rpi-ft5406-touchscreen-module/*.xz
+/rpi-ft5406-touchscreen-module/*.ko
