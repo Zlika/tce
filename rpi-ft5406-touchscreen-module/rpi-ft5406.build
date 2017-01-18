@@ -8,10 +8,13 @@
 # Configure extension creation parameters            #
 ######################################################
 
-VERSION=4.4.39-piCore_v7+
+VERSION_V6=4.4.39-piCore+
+VERSION_V7=4.4.39-piCore_v7+
 WRKDIR=modules
-EXTNAME=rpi-ft5406-touchscreen-module-$VERSION
-TMPDIR=/tmp/$EXTNAME
+EXTNAME_V6=rpi-ft5406-touchscreen-module-$VERSION_V6
+EXTNAME_V7=rpi-ft5406-touchscreen-module-$VERSION_V7
+TMPDIR_V6=/tmp/$EXTNAME_V6
+TMPDIR_V7=/tmp/$EXTNAME_V7
 PREFIX=/usr/local
 SCRIPT_PATH=$(pwd)
 
@@ -20,50 +23,88 @@ SCRIPT_PATH=$(pwd)
 ######################################################
 
 # Remove dirs and files left from previous creation
-rm -r -f $TMPDIR
+rm -r -f $TMPDIR_V6
+rm -r -f $TMPDIR_V7
 rm -r -f $WRKDIR
-rm -r -f "$VERSION"_modules.tar.xz
+rm -r -f "$VERSION_V6"_modules.tar.xz
+rm -r -f "$VERSION_V7"_modules.tar.xz
 
 # Download packaging dependencies
 tce-load -iw squashfs-tools zsync
 
 # Download upstream binary
-wget http://tinycorelinux.net/8.x/armv7/releases/RPi/src/kernel/"$VERSION"_modules.tar.xz
+wget http://tinycorelinux.net/8.x/armv6/releases/RPi/src/kernel/"$VERSION_V6"_modules.tar.xz
+wget http://tinycorelinux.net/8.x/armv7/releases/RPi/src/kernel/"$VERSION_V7"_modules.tar.xz
 
 ######################################################
 # Copy files                                         #
 ######################################################
 
-tar xf "$VERSION"_modules.tar.xz
-mkdir -p $TMPDIR$PREFIX/lib/modules/$VERSION/kernel/drivers/input/touchscreen
-cp $SCRIPT_PATH/$WRKDIR/"$VERSION"/kernel/drivers/input/touchscreen/rpi-ft5406.ko $TMPDIR$PREFIX/lib/modules/"$VERSION"/kernel/drivers/input/touchscreen
+tar xf "$VERSION_V6"_modules.tar.xz
+mkdir -p $TMPDIR_V6$PREFIX/lib/modules/$VERSION_V6/kernel/drivers/input/touchscreen
+cp $SCRIPT_PATH/$WRKDIR/"$VERSION_V6"/kernel/drivers/input/touchscreen/rpi-ft5406.ko $TMPDIR_V6$PREFIX/lib/modules/"$VERSION_V6"/kernel/drivers/input/touchscreen
+
+tar xf "$VERSION_V7"_modules.tar.xz
+mkdir -p $TMPDIR_V7$PREFIX/lib/modules/$VERSION_V7/kernel/drivers/input/touchscreen
+cp $SCRIPT_PATH/$WRKDIR/"$VERSION_V7"/kernel/drivers/input/touchscreen/rpi-ft5406.ko $TMPDIR_V7$PREFIX/lib/modules/"$VERSION_V7"/kernel/drivers/input/touchscreen
 
 # Adjust directory access rigths
-find $TMPDIR/ -type d | xargs chmod -v 755;
+find $TMPDIR_V6/ -type d | xargs chmod -v 755;
+find $TMPDIR_V7/ -type d | xargs chmod -v 755;
 
 ###################################################
-# Create base extension in temp dir               #
+# Create ARMv6 extension in temp dir              #
 ###################################################
 
-cd $TMPDIR
+cd $TMPDIR_V6
 cd ..
-mksquashfs $TMPDIR $EXTNAME.tcz
-cd $TMPDIR
-find usr -not -type d > $EXTNAME.tcz.list
-mv ../$EXTNAME.tcz .
+mksquashfs $TMPDIR_V6 $EXTNAME_V6.tcz
+cd $TMPDIR_V6
+find usr -not -type d > $EXTNAME_V6.tcz.list
+mv ../$EXTNAME_V6.tcz .
 
 # Create md5 file
-md5sum $EXTNAME.tcz > $EXTNAME.tcz.md5.txt
+md5sum $EXTNAME_V6.tcz > $EXTNAME_V6.tcz.md5.txt
 
-# Copy *.info and *.dep files
-cp $SCRIPT_PATH/$EXTNAME.tcz.info $TMPDIR
+# Copy *.info file
+cp $SCRIPT_PATH/$EXTNAME_V7.tcz.info $TMPDIR_V6
+mv $EXTNAME_V7.tcz.info $EXTNAME_V6.tcz.info
+sed -i "s/^Title.*/Title:\t\t$EXTNAME_V6\.tcz/" $EXTNAME_V6.tcz.info
+sed -i "s/^Version.*/Version:\t$VERSION_V6/" $EXTNAME_V6.tcz.info
 
 # Update Size field in info file
-SIZE=$(du -h $EXTNAME.tcz | cut -f 1)
-sed -i "s/^Size.*/Size:\t\t$SIZE/" $EXTNAME.tcz.info
+SIZE=$(du -h $EXTNAME_V6.tcz | cut -f 1)
+sed -i "s/^Size.*/Size:\t\t$SIZE/" $EXTNAME_V6.tcz.info
 
 # Create zsync file
-zsyncmake $EXTNAME.tcz > /dev/null 2>&1
+zsyncmake $EXTNAME_V6.tcz > /dev/null 2>&1
 
 # Create tarball
-tar cvfz $EXTNAME.tar.gz $EXTNAME.tcz*
+tar cvfz $EXTNAME_V6.tar.gz $EXTNAME_V6.tcz*
+
+###################################################
+# Create ARMv7 extension in temp dir              #
+###################################################
+
+cd $TMPDIR_V7
+cd ..
+mksquashfs $TMPDIR_V7 $EXTNAME_V7.tcz
+cd $TMPDIR_V7
+find usr -not -type d > $EXTNAME_V7.tcz.list
+mv ../$EXTNAME_V7.tcz .
+
+# Create md5 file
+md5sum $EXTNAME_V7.tcz > $EXTNAME_V7.tcz.md5.txt
+
+# Copy *.info file
+cp $SCRIPT_PATH/$EXTNAME_V7.tcz.info $TMPDIR_V7
+
+# Update Size field in info file
+SIZE=$(du -h $EXTNAME_V7.tcz | cut -f 1)
+sed -i "s/^Size.*/Size:\t\t$SIZE/" $EXTNAME_V7.tcz.info
+
+# Create zsync file
+zsyncmake $EXTNAME_V7.tcz > /dev/null 2>&1
+
+# Create tarball
+tar cvfz $EXTNAME_V7.tar.gz $EXTNAME_V7.tcz*
