@@ -43,13 +43,20 @@ ROOT_UID=0
 rm -r -f $TMPDIR
 rm -r -f $WRKDIR
 
-# Configure ARM / x86 build
+# Configure ARM / x86 / x86_64 build
 if [ `uname -a | grep armv | wc -l` -eq "1" ];
 then
    ARM="true"
+   X64="false"
    echo "ARM build detected"
+elif [ `uname -a | grep x86_64 | wc -l` -eq "1" ]
+then
+   ARM="false"
+   X64="true"
+   echo "x86_64 build detected"
 else
    ARM="false"
+   X64="false"
    echo "x86 build detected"
 fi
 
@@ -80,6 +87,13 @@ then
    VM_VARIANT=zero
    BUILD_FOLDER_NAME=linux-arm-normal-$VM_VARIANT-release
    BOOT_JDK=/usr/lib/jvm/java-8-openjdk-armhf
+elif [ $X64 = "true" ]
+then
+   export CFLAGS="-march=x86-64 -Os -pipe"
+   export CXXFLAGS="$CFLAGS"
+   VM_VARIANT=server
+   BUILD_FOLDER_NAME=linux-x86_64-normal-$VM_VARIANT-release
+   BOOT_JDK=/usr/lib/jvm/java-8-openjdk-x86_64
 else
    export CFLAGS="-march=i486 -mtune=i686 -Os -pipe"
    export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe"
@@ -106,6 +120,12 @@ sh ./configure \
 --with-user-release-suffix="$VERSION_TCZ" \
 --with-update-version=$VERSION_SRC \
 --with-build-number=b$BUILD_SRC
+
+if [ $? -ne 0 ]
+then
+   exit 1
+fi
+
 
 # Compile
 make images COMPRESS_JARS=true
