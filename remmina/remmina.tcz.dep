@@ -1,3 +1,6 @@
 vte-gtk3.tcz
 libvncserver.tcz
 gnome-icon-theme.tcz
+freerdp2.tcz
+libsodium.tcz
+libsoup.tcz

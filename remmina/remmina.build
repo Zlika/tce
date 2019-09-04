@@ -1,14 +1,14 @@
 #!/bin/sh
 
 ######################################################
-# Build script for FreeRDP                           #
+# Build script for Remmina                           #
 ######################################################
 
 ######################################################
 # Configure extension creation parameters            #
 ######################################################
 
-COMMIT=cc77c59
+COMMIT=9b6f608b
 WRKDIR=Remmina
 EXTNAME=remmina
 TMPDIR=/tmp/$EXTNAME
@@ -25,7 +25,7 @@ rm -r -f $WRKDIR
 mkdir -p $TMPDIR
 
 # Download build dependencies
-tce-load -iw git cmake compiletc squashfs-tools zsync vte-gtk3-dev libgcrypt-dev gettext libvncserver-dev freerdp-dev zlib_base-dev
+tce-load -iw git cmake compiletc squashfs-tools zsync vte-gtk3-dev libgcrypt-dev gettext libvncserver-dev freerdp2-dev freerdp2 zlib_base-dev libsodium-dev libsoup-dev
 
 # Download upstream source
 git clone https://github.com/FreeRDP/Remmina.git

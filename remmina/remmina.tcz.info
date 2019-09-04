@@ -1,6 +1,6 @@
 Title:		remmina.tcz
 Description:	remmina - GTK+ Remote Desktop Client
-Version:	1.1.2-gitcc77c59
+Version:	1.3.6
 Author:		Various
 Original-site:	http://remmina.org
 Copying-policy:	GPL v2
@@ -8,10 +8,6 @@ Size:		268KB
 Extension_by:	gutmensch
 Tags:		remote desktop vnc xdmcp freerdp gtk+ gtk3
 Comments:	GTK+ Remote Desktop Client with multiple protocol support
-	   	----------
-	   	Optional dependencies:
-	   	   - freerdp: for RDP protocol support
-	   	   - Xorg-7.7: if the application crashes when connecting to the remote server
 	   	----------
 		This extension is PPI compatible.
 Change-log:	2010/12/13	Initial version 0.9.0
@@ -22,4 +18,5 @@ Change-log:	2010/12/13	Initial version 0.9.0
 		2011/02/06	Bump to 0.9.3
                 2013/03/07	Bump to 1.0.0
                 2016/10/11	updated 1.0.0 -> 1.2.0-rcgit.15 (juanito)
-Current:	2016/11/10	updated to latest stable version 1.1.2 (Zlika)
+                2016/11/10	updated to latest stable version 1.1.2 (Zlika)
+Current:        2019/09/04	updated to version 1.3.6 (Zlika)
