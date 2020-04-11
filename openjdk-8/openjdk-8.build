@@ -93,7 +93,7 @@ then
    export CXXFLAGS="$CFLAGS"
    VM_VARIANT=server
    BUILD_FOLDER_NAME=linux-x86_64-normal-$VM_VARIANT-release
-   BOOT_JDK=/usr/lib/jvm/java-8-openjdk-x86_64
+   BOOT_JDK=/usr/lib/jvm/java-8-openjdk-amd64
 else
    export CFLAGS="-march=i486 -mtune=i686 -Os -pipe"
    export CXXFLAGS="-march=i486 -mtune=i686 -Os -pipe"
@@ -157,12 +157,22 @@ rm -r -f $TMPDIR/$EXTNAME_JRE$PREFIX/$NAME/jre/man
 # Strip executables
 find $TMPDIR | xargs file | grep ELF | cut -f 1 -d : | xargs strip --strip-unneeded
 
+# Say no to magical strings
+images="$EXTNAME_JDK $EXTNAME_JRE $EXTNAME_JRE-compact1 $EXTNAME_JRE-compact2 $EXTNAME_JRE-compact3"
+
 # Make TC specific changes
 SCRIPT="#!/bin/sh\nsed -i -e 's%PATH=\"%PATH=\"$PREFIX/$NAME/jre/bin:%' /etc/profile\necho 'export JAVA_HOME=$PREFIX/$NAME/jre' >> /etc/profile"
-for image in $EXTNAME_JDK $EXTNAME_JRE $EXTNAME_JRE-compact1 $EXTNAME_JRE-compact2 $EXTNAME_JRE-compact3
+
+# 64-bit expects to see a /lib64; make sure there's one there
+if [ "$X64" -eq "true" ]
+then
+   SCRIPT="$SCRIPT\n[ -L /lib64 ] || ln -s /lib /lib64"
+fi
+
+for image in $images
 do
     mkdir -p $TMPDIR/$image$PREFIX/tce.installed
-    echo $SCRIPT > $TMPDIR/$image$PREFIX/tce.installed/$image
+    echo -e $SCRIPT > $TMPDIR/$image$PREFIX/tce.installed/$image
 done
 
 # Move files to doc extension
@@ -172,7 +182,7 @@ mv $TMPDIR/$EXTNAME_JDK$PREFIX/$NAME/man $TMPDIR/$NAME-doc$PREFIX/share
 # Adjust directory access rigths and file owner
 find $TMPDIR/* -type d | xargs chmod 755;
 find $TMPDIR/* | xargs sudo chown -h $ROOT_UID:$ROOT_UID;
-for image in $EXTNAME_JDK $EXTNAME_JRE $EXTNAME_JRE-compact1 $EXTNAME_JRE-compact2 $EXTNAME_JRE-compact3
+for image in $images
 do
     sudo chmod -R 775 $TMPDIR/$image$PREFIX/tce.installed
     sudo chown -R $TC_UID:$STAFF_GUID $TMPDIR/$image$PREFIX/tce.installed
@@ -182,7 +192,7 @@ done
 # Create extensions in temp dir                   #
 ###################################################
 
-for image in $EXTNAME_JDK $EXTNAME_JRE $EXTNAME_JRE-compact1 $EXTNAME_JRE-compact2 $EXTNAME_JRE-compact3
+for image in $images
 do
     cd $TMPDIR
     mksquashfs $TMPDIR/$image $image.tcz -b 4k -no-xattrs
